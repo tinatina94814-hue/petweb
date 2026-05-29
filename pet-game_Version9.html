@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>寵物養成</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(45deg, #1a472a 25%, #2d5a3d 25%, #2d5a3d 50%, #1a472a 50%, #1a472a 75%, #2d5a3d 75%, #2d5a3d);
+            background-size: 40px 40px;
+            overflow: hidden;
+        }
+
+        .container {
+            text-align: center;
+            background-color: rgba(100, 200, 100, 0.8);
+            padding: 50px;
+            border-radius: 20px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            border: 5px solid #1a472a;
+        }
+        
+        h1 {
+            color: #1a472a;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 0px rgba(255, 255, 255, 0.5);
+        }
+        
+        .egg {
+            font-size: 100px;
+            margin: 20px 0;
+            animation: bounce 2s infinite;
+            display: block;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        @keyframes heartFloat {
+            0% {
+                opacity: 1;
+                transform: translateY(0) translateX(0);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-60px) translateX(20px);
+            }
+        }
+        
+        .button {
+            margin-top: 20px;
+            padding: 12px 30px;
+            font-size: 1.1em;
+            background-color: #4CAF50;
+            color: white;
+            border: 3px solid #1a472a;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.1s;
+            font-weight: bold;
+        }
+        
+        .button:hover {
+            background-color: #45a049;
+        }
+        
+        .button:active {
+            transform: scale(0.95);
+        }
+        
+        .pet-display {
+            margin-top: 30px;
+            font-size: 80px;
+            min-height: 120px;
+            position: relative;
+        }
+        
+        p {
+            font-size: 1.2em;
+            color: #1a472a;
+            font-weight: bold;
+        }
+
+        .affection-display {
+            margin-top: 20px;
+            font-size: 1.3em;
+            color: #1a472a;
+            font-weight: bold;
+        }
+
+        .affection-level {
+            margin: 10px auto;
+            font-size: 1.5em;
+            color: #FF6B6B;
+            font-weight: bold;
+        }
+
+        .heart-display {
+            margin: 10px auto;
+            font-size: 1.8em;
+            letter-spacing: 5px;
+        }
+
+        .progress-display {
+            margin-top: 10px;
+            font-size: 1.1em;
+            color: #1a472a;
+            font-weight: bold;
+        }
+
+        .progress-bar {
+            width: 200px;
+            height: 20px;
+            background-color: #ddd;
+            border: 2px solid #1a472a;
+            border-radius: 5px;
+            margin: 8px auto;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: #FFD700;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .feed-button {
+            margin-top: 20px;
+            padding: 12px 30px;
+            font-size: 1.1em;
+            background-color: #FF6B6B;
+            color: white;
+            border: 3px solid #1a472a;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.1s;
+            font-weight: bold;
+        }
+
+        .feed-button:hover:not(:disabled) {
+            background-color: #ee5a52;
+        }
+
+        .feed-button:active:not(:disabled) {
+            transform: scale(0.95);
+        }
+
+        .feed-button:disabled {
+            background-color: #999;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .heart {
+            position: absolute;
+            font-size: 30px;
+            animation: heartFloat 1.5s ease-out forwards;
+        }
+
+        .affection-message {
+            margin-top: 15px;
+            font-size: 1.2em;
+            color: #FF6B6B;
+            font-weight: bold;
+            min-height: 30px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .max-affection-message {
+            margin-top: 15px;
+            font-size: 1.3em;
+            color: #FFD700;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>寵物養成</h1>
+        <div class="egg" id="egg">🥚</div>
+        <p id="message">你的寵物蛋來了，好好照顧它吧！</p>
+        
+        <button class="button" onclick="hatchPet()" id="button">點擊孵化</button>
+        
+        <div class="pet-display" id="petDisplay"></div>
+
+        <div id="statsDisplay" class="hidden">
+            <div class="affection-display">好感度</div>
+            <div class="affection-level" id="affectionLevel">1 / 10</div>
+            <div class="heart-display" id="heartDisplay">❤️</div>
+            <div id="progressSection" class="progress-display">
+                進度: <span id="feedCount">0</span> / 5
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+            </div>
+            <div id="maxMessage" class="max-affection-message hidden">✨ 好感度已最高 ✨</div>
+            <div class="affection-message" id="affectionMessage"></div>
+        </div>
+
+        <button class="feed-button hidden" onclick="feedPet()" id="feedButton">🍖 餵食</button>
+    </div>
+
+    <script>
+        const animals = ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮', '🐷', '🐸', '🐵', '🐔', '🦆', '🦅', '🦉', '🦇', '🐢', '🐍', '🦎', '🦖', '🦕', '🐙', '🦑', '🦐', '🦞', '🦀', '🐡', '🐠', '🐟', '🐬', '🐳'];
+        
+        let affection = 1;
+        let feedCount = 0;
+        let isHatched = false;
+        
+        function hatchPet() {
+            const randomIndex = Math.floor(Math.random() * animals.length);
+            const randomAnimal = animals[randomIndex];
+            document.getElementById('petDisplay').textContent = randomAnimal;
+            document.getElementById('egg').classList.add('hidden');
+            document.getElementById('message').classList.add('hidden');
+            document.getElementById('button').classList.add('hidden');
+            document.getElementById('feedButton').classList.remove('hidden');
+            document.getElementById('statsDisplay').classList.remove('hidden');
+            isHatched = true;
+            updateAffectionDisplay();
+        }
+
+        function feedPet() {
+            if (!isHatched || affection >= 10) return;
+
+            feedCount++;
+            createHeart();
+            
+            // 每5次餵食升級一次
+            if (feedCount % 5 === 0) {
+                affection++;
+                if (affection === 10) {
+                    showAffectionMessage('🎉 好感度升級！');
+                    disableFeedButton();
+                } else {
+                    showAffectionMessage('🎉 好感度升級！');
+                }
+            } else {
+                showAffectionMessage('❤️ 好感度上升！');
+            }
+
+            updateAffectionDisplay();
+        }
+
+        function updateAffectionDisplay() {
+            document.getElementById('affectionLevel').textContent = affection + ' / 10';
+            
+            // 根據好感度顯示愛心數量
+            let hearts = '';
+            for (let i = 0; i < affection; i++) {
+                hearts += '❤️';
+            }
+            document.getElementById('heartDisplay').textContent = hearts;
+
+            // 更新進度條
+            const currentProgress = feedCount % 5;
+            const progressPercentage = (currentProgress / 5) * 100;
+            document.getElementById('progressFill').style.width = progressPercentage + '%';
+            document.getElementById('feedCount').textContent = currentProgress;
+        }
+
+        function disableFeedButton() {
+            const feedButton = document.getElementById('feedButton');
+            feedButton.disabled = true;
+            document.getElementById('progressSection').classList.add('hidden');
+            document.getElementById('maxMessage').classList.remove('hidden');
+        }
+
+        function createHeart() {
+            const heart = document.createElement('div');
+            heart.className = 'heart';
+            heart.textContent = '❤️';
+            
+            // 隨機位置
+            const randomX = (Math.random() - 0.5) * 100;
+            heart.style.left = (50 + randomX) + 'px';
+            heart.style.top = '0px';
+            
+            document.getElementById('petDisplay').appendChild(heart);
+
+            // 動畫結束後移除
+            setTimeout(() => {
+                heart.remove();
+            }, 1500);
+        }
+
+        function showAffectionMessage(message) {
+            const messageEl = document.getElementById('affectionMessage');
+            messageEl.textContent = message;
+            messageEl.style.opacity = '1';
+            
+            setTimeout(() => {
+                messageEl.style.opacity = '0';
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
